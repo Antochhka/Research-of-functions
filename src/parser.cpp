@@ -18,9 +18,9 @@ void parser() {
         char el = input[i];
         if (isdigit(el)) {
             i += is_digit(i, input, sum, output_arr, i_out_arr);
-        } else if (input[i] == 'x') {
+        } else if (el == 'x') {
             output_arr[i_out_arr][0] = X;
-            output_arr[i_out_arr][1] = 0; 
+            output_arr[i_out_arr][1] = 0;
         }
         i++;
     }
@@ -28,13 +28,14 @@ void parser() {
 }
 
 void print_arr(vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
-    for ( unsigned int i = 0; i < i_out_arr + 1; i++) {
-        printf("[i]:%d codif: %.0lf elem: %.2lf\n", i_out_arr, output_arr[i][0], output_arr[i][1]);
+    for (unsigned int i = 0; i < i_out_arr + 1; i++) {
+        printf("[%d]: codif: %.0lf elem: %.2lf\n", i_out_arr, output_arr[i][0], output_arr[i][1]);
     }
     cout << endl;
 }
 
-unsigned int is_digit(unsigned int &i, string &input, double &sum, vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
+unsigned int is_digit(unsigned int &i, string &input, double &sum, vector<vector<double>> &output_arr,
+                      unsigned int &i_out_arr) {
     unsigned int indx = i;
     string double_num = "";
     while (indx < input.size() && (isdigit(input[indx]) || input[indx] == '.')) {
@@ -46,4 +47,26 @@ unsigned int is_digit(unsigned int &i, string &input, double &sum, vector<vector
     output_arr[i_out_arr][1] = sum;
     sum = 0.0;
     return indx - i - 1;
+}
+
+unsigned int priority(char &el) {
+    unsigned int priority = 0;
+    switch (el) {
+        case '+':
+            priority = 1;
+            break;
+        case '-':
+            priority = 1;
+            break;
+        case '*':
+            priority = 2;
+            break;
+        case '/':
+            priority = 2;
+            break;
+        default:
+            priority = 3;
+            break;
+    }
+    return priority;
 }
