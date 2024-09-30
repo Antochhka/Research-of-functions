@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>MathGrafPro</title>
+    <link href="main.css" rel="stylesheet">
+</head>
+
+<body id="body">
+    <h1>Построение графика функции</h1>
+
+    <form id="form"> 
+        <input type="text" id="functionInput" placeholder="Введите функцию, например: Math.sin(x)">
+        <button id="button" onclick="plotGraph(event)">Построить график</button>
+    </form>
+
+   
+
+    <div id="plot" style = "display: none;"></div>
+
+    <script src = "index.js"></script>
+</body>
+
+</html>

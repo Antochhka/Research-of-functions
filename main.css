@@ -1,0 +1,62 @@
+#body{
+    background: url('https://img.freepik.com/free-vector/gradient-template-background-new-minimalist_483537-4993.jpg?t=st=1727274887~exp=1727278487~hmac=3ca93abc378fa896c0d9a1bbac5ed499a536f8536b755390f48f7ff60be4f5ee&w=1380') no-repeat center center/cover fixed;
+}
+
+#form{
+    width: 745px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#functionInput {
+    width: 600px;
+    height: 50px; 
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700; /* жирный */
+    font-size: 15px;
+}    
+
+h1{
+    text-align: center;
+    align-items: center; 
+    font-family: 'Roboto', sans-serif;
+    color:#0B63F6;
+    font-weight: 700; /* жирный */
+    font-style: italic;
+}
+::placeholder{
+    color:#0B63F6;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700; /* жирный */
+    font-size: 15px;
+}
+
+#button{
+    height: 50px;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    color: white;
+    background: #0B63F6;
+    box-shadow: 0 5px 0 #003CC5;
+}
+
+#button:hover{
+    background: #003CC5;
+    box-shadow: none;
+    position: relative;
+    top: 5px;
+}
+
+#plot{
+    width: 300px;
+    padding: 20px;
+    border: 2px solid #333; /* Рамка вокруг элемента */
+    background-color: #fff;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Тень для эффекта "выпуклости" */
+    width: 745px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 40px;
+}
