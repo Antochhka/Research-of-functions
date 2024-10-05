@@ -12,13 +12,16 @@ parser.o:
 test.o:
 	$(GCC) -c $(flag) test.cpp
 
+start:
+	./result
+
 clang:
 	clang-format -i *.h *.cpp
 
 cppcheck:
 	cppcheck --enable=all --suppress=missingIncludeSystem *.h *.cpp
 
-rebuild: clean build
+rebuild: clean build start
 
 clean:
 	rm -rf *.o result
