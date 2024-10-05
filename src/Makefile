@@ -3,11 +3,14 @@ GCC = g++
 
 all: build
 
-build: parser.o test.o
-	$(GCC) -o result parser.o test.o
+build: parser.o test.o calculation.o
+	$(GCC) -o result parser.o calculation.o test.o
 
 parser.o:
 	$(GCC) -c $(flag) parser.cpp
+
+calculation.o:
+	$(GCC) -c $(flag) calculation.cpp
 
 test.o:
 	$(GCC) -c $(flag) test.cpp

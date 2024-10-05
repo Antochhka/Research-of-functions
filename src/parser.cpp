@@ -1,16 +1,10 @@
 // parser.cpp
 #include "parser.h"
 
-void parser() {
+void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
     string input;
     getline(cin, input);
     unsigned int i = 0;
-    unsigned int i_out_arr = 0;
-    vector<vector<double>> output_arr;
-    output_arr.resize(BUFFER);
-    for (int i = 0; i < BUFFER; i++) {
-        output_arr[i].resize(2);
-    }
     double sum = 0.0;
     Stack<char> operations_stack;
     string operators = "+-*/^";
@@ -24,7 +18,8 @@ void parser() {
             output_arr[i_out_arr][DATA] = NONE;
             i_out_arr++;
         } else if (operators.find(el) != string::npos || functions.find(el) != string::npos) {
-            if (el == '-' && (i == 0 || input[i - 1] == '(' || input[i - 1] == ')' || (!isdigit(input[i - 1])))) {
+            if (el == '-' &&
+                (i == 0 || input[i - 1] == '(' || input[i - 1] == ')' || (!isdigit(input[i - 1])))) {
                 operations_stack.push('`');
             } else {
                 char res = ' ';
@@ -34,13 +29,14 @@ void parser() {
                 } else {
                     res = el;
                 }
-                if (!operations_stack.is_empty() && priority(res) < priority(operations_stack.peak())) {
-                    while (!operations_stack.is_empty() && operations_stack.peak() != '(') {
-                        output_arr[i_out_arr][CODIF] = codifications(operations_stack.pop());
-                        output_arr[i_out_arr][DATA] = NONE;
-                        i_out_arr++;
-                    }
+
+                while (!operations_stack.is_empty() && operations_stack.peak() != '(' &&
+                       (priority(res) < priority(operations_stack.peak()))) {
+                    output_arr[i_out_arr][CODIF] = codifications(operations_stack.pop());
+                    output_arr[i_out_arr][DATA] = NONE;
+                    i_out_arr++;
                 }
+
                 operations_stack.push(res);
             }
 
