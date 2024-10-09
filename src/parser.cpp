@@ -1,9 +1,7 @@
 // parser.cpp
 #include "parser.h"
 
-void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
-    string input;
-    getline(cin, input);
+void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr, string &input) {
     unsigned int i = 0;
     double sum = 0.0;
     Stack<char> operations_stack;

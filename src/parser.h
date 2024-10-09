@@ -3,6 +3,10 @@
 #define PARSER_H
 
 #include <cctype>
+#include <iostream>
+#include <locale>
+#include <regex>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -41,7 +45,7 @@ enum TokenType {
 using namespace std;
 
 // parser.cpp
-void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr);
+void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr, string &input);
 void print_arr(vector<vector<double>> &output_arr, unsigned int &i_out_arr);
 unsigned int is_digit(unsigned int &i, string &input, double &sum, vector<vector<double>> &output_arr,
                       unsigned int &i_out_arr);
@@ -57,5 +61,25 @@ void calculating_coordinate(vector<vector<double>> &output_arr, unsigned int &i_
                             vector<vector<double>> &coordinate_arr);
 
 void print_coordinate_arr(vector<vector<double>> &coordinate_arr);
+
+// validator.cpp
+
+// Функция для проверки правильности использования скобок
+bool checkBrackets(const std::string &expression, std::string &error);
+
+// Функция для удаления пробелов из строки
+std::string removeSpaces(const std::string &str);
+
+// Функция для проверки валидных символов
+bool checkValidCharacters(const std::string &expression, std::string &error);
+
+// Функция для проверки правильного использования операторов
+bool checkOperators(const std::string &expression, std::string &error);
+
+// Функция для проверки наличия операндов в строке
+bool checkOperands(const std::string &expression, std::string &error);
+
+// Основная функция-валидатор
+bool validateMathExpression(const std::string &expression);
 
 #endif  // PARSER_H

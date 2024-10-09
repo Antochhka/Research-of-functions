@@ -3,8 +3,8 @@ GCC = g++
 
 all: build
 
-build: parser.o test.o calculation.o
-	$(GCC) -o result parser.o calculation.o test.o
+build: validator.o parser.o test.o calculation.o
+	$(GCC) -o result validator.o parser.o calculation.o test.o
 
 parser.o:
 	$(GCC) -c $(flag) parser.cpp
@@ -14,6 +14,10 @@ calculation.o:
 
 test.o:
 	$(GCC) -c $(flag) test.cpp
+
+validator.o:
+	$(GCC) -c $(flag) validator.cpp
+	
 
 start:
 	./result
