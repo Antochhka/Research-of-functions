@@ -1,184 +1,216 @@
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <iostream>
+#include <winsock2.h>
 #include <string>
+#include <regex>
 #include <sstream>
-#include <fstream>
-#include <vector>
+#include <fstream> // Необходим для работы с файлами
+#include "parser.h"
 
-#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "ws2_32.lib")
 
-// Размер буфера для чтения данных
-#define BUFFER_SIZE 1024
+const int PORT = 8080;
 
-// Функция для инициализации Winsock
-bool initWinsock() {
-    setlocale(LC_ALL, "Russian");
-    WSADATA wsaData;
-    int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (result != 0) {
-        std::cerr << "Initialization error Winsock: " << result << std::endl;
-        return false;
-    }
-    return true;
+bool isValidFunction(const std::string& function) {
+    return function.find("x") != std::string::npos;  // Проверка на наличие переменной x
 }
 
-// Функция для создания серверного сокета
-SOCKET createServerSocket() {
-    setlocale(LC_ALL, "Russian");
-    SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverSocket == INVALID_SOCKET) {
-        std::cerr << "Creation Error сокета: " << WSAGetLastError() << std::endl;
-        WSACleanup();
-        exit(1);
+// Функция для конвертации массива координат в JSON
+std::string coordinatesToJson(const std::vector<std::vector<double>>& coordinate_arr) {
+    std::ostringstream oss;
+    oss << "[";
+    for (size_t i = 0; i < coordinate_arr.size(); ++i) {
+        oss << "[" << coordinate_arr[i][0] << ", " << coordinate_arr[i][1] << "]";
+        if (i < coordinate_arr.size() - 1) {
+            oss << ", ";
+        }
     }
-    return serverSocket;
+    oss << "]";
+    return oss.str();
 }
 
-// Функция для привязки и прослушивания сокета
-void bindAndListen(SOCKET serverSocket, int port) {
-    setlocale(LC_ALL, "Russian");
-    sockaddr_in serverAddr;
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY; // Принимать соединения на всех интерфейсах
-    serverAddr.sin_port = htons(port);
 
-    if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-        std::cerr << "Socket binding error: " << WSAGetLastError() << std::endl;
-        closesocket(serverSocket);
-        WSACleanup();
-        exit(1);
-    }
-
-    if (listen(serverSocket, SOMAXCONN) == SOCKET_ERROR) {
-        std::cerr << "Listening Error: " << WSAGetLastError() << std::endl;
-        closesocket(serverSocket);
-        WSACleanup();
-        exit(1);
-    }
-
-    std::cout << "Server listens on port " << port << std::endl;
-}
-
-// Функция для чтения содержимого HTML-файла
-std::string readHtmlFile(const std::string& filename) {
+std::string readFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
+        std::cerr << "Ошибка при открытии файла: " << filename << std::endl;
         return "";
     }
-
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
 }
 
-// Функция для обработки GET-запроса
-void handleGetRequest(SOCKET clientSocket) {
+void handleClient(SOCKET clientSocket) {
     setlocale(LC_ALL, "Russian");
-    std::string htmlContent = readHtmlFile("D:\\Учеба\\Проект\\frontend\\index.html");
-    if (htmlContent.empty()) {
-        std::cerr << "Error reading HTML file" << std::endl;
-        return;
+    char buffer[1024] = { 0 };
+    int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+
+    if (bytesRead > 0) {
+        buffer[bytesRead] = '\0';
+        std::cout << "Получен HTTP запрос:\n" << buffer << std::endl;
     }
 
-    std::string response =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        "Content-Length: " + std::to_string(htmlContent.size()) + "\r\n"
-        "Access-Control-Allow-Origin: *\r\n"
-        "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
-        "Access-Control-Allow-Headers: Content-Type\r\n"
-        "\r\n" + htmlContent;
+    std::string request(buffer);
+    std::string method;
+    std::string path;
+    std::string body;
 
-    send(clientSocket, response.c_str(), response.size(), 0);
-}
 
-// Функция для обработки POST-запроса
-void handlePostRequest(SOCKET clientSocket, const std::string& request) {
-    setlocale(LC_ALL, "Russian");
-    std::string::size_type bodyPos = request.find("\r\n\r\n");
+    // Простой парсинг HTTP-запроса
+    std::istringstream requestStream(request);
+    requestStream >> method >> path;
 
-    if (bodyPos != std::string::npos) {
-        std::string body = request.substr(bodyPos + 4);  // Тело POST-запроса
-        std::cout << "Request body: \n" << body << std::endl;
-
-        
-        std::string::size_type functionPos = body.find("name=\"function\"");
-        if (functionPos != std::string::npos) {
-            std::string::size_type valueStart = body.find("\r\n\r\n", functionPos) + 4;
-            std::string::size_type valueEnd = body.find("\r\n", valueStart);
-            std::string functionValue = body.substr(valueStart, valueEnd - valueStart);
-            std::cout << "Function value: " << functionValue << std::endl;
-
-            
-            std::string response =
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: application/json\r\n"
-                "Access-Control-Allow-Origin: *\r\n"
-                "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
-                "Access-Control-Allow-Headers: Content-Type\r\n"
-                "Content-Length: " + std::to_string(functionValue.size() + 28) + "\r\n"
-                "\r\n"
-                "{\"status\":\"success\",\"data\":\"" + functionValue + "\"}";
-
+    if (method == "GET") {
+        if (path == "/") {
+            // Читаем HTML файл
+            std::string htmlContent = readFile("D:\\learning\\project\\fullstack\\frontend\\index.html");
+            if (htmlContent.empty()) {
+                std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nФайл не найден";
+                send(clientSocket, response.c_str(), response.size(), 0);
+            }
+            else {
+                std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " +
+                    std::to_string(htmlContent.size()) + "\r\n\r\n" + htmlContent;
+                send(clientSocket, response.c_str(), response.size(), 0);
+            }
+        }
+        else if (path == "/main.css") {
+            std::string cssContent = readFile("D:\\learning\\project\\fullstack\\frontend\\main.css");
+            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\nContent-Length: " +
+                std::to_string(cssContent.size()) + "\r\n\r\n" + cssContent;
+            send(clientSocket, response.c_str(), response.size(), 0);
+        }
+        else if (path == "/index.js") {
+            std::string jsContent = readFile("D:\\learning\\project\\fullstack\\frontend\\index.js");
+            std::string response = "HTTP/1.1 200 OK\r\nContent-Type: application/javascript\r\nContent-Length: " +
+                std::to_string(jsContent.size()) + "\r\n\r\n" + jsContent;
+            send(clientSocket, response.c_str(), response.size(), 0);
+        }
+        else {
+            std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nРесурс не найден";
             send(clientSocket, response.c_str(), response.size(), 0);
         }
     }
-    else {
-        std::cerr << "Error receiving data from client: " << WSAGetLastError() << std::endl;
+    else if (method == "POST") {
+    // Получение тела запроса
+    std::string contentLengthHeader = "Content-Length: ";
+    size_t contentLengthPos = request.find(contentLengthHeader);
+    if (contentLengthPos != std::string::npos) {
+        size_t start = contentLengthPos + contentLengthHeader.length();
+        size_t end = request.find("\r\n", start);
+        int contentLength = std::stoi(request.substr(start, end - start));
+        body = request.substr(request.find("\r\n\r\n") + 4, contentLength);
     }
-}
 
+    // Проверяем, что Content-Type: application/json
+    std::string contentTypeHeader = "Content-Type: ";
+    size_t contentTypePos = request.find(contentTypeHeader);
+    if (contentTypePos != std::string::npos) {
+        size_t start = contentTypePos + contentTypeHeader.length();
+        size_t end = request.find("\r\n", start);
+        std::string contentType = request.substr(start, end - start);
 
-void handleClient(SOCKET clientSocket) {
-    setlocale(LC_ALL, "Russian");
-    char buffer[BUFFER_SIZE];
-    int bytesReceived = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+        if (contentType == "application/json") {
+            // Обрабатываем JSON тело
+            std::string function;
+            size_t functionPos = body.find("\"function\":\"");
+            if (functionPos != std::string::npos) {
+                size_t start = functionPos + std::string("\"function\":\"").length();
+                size_t end = body.find("\"", start);
+                function = body.substr(start, end - start);
+            }
 
-    if (bytesReceived > 0) {
-        buffer[bytesReceived] = '\0'; 
+            std::cout << "Функция: " << function << std::endl;
 
-        
-        std::cout << "Request received: \n" << buffer << std::endl;
+             // Проверяем валидность математического выражения
+                if (validateMathExpression(function)) {
+                    // Подготовка выходного массива
+                    std::vector<std::vector<double>> output_arr;
+                    unsigned int i_out_arr = 0;
+                    output_arr.resize(BUFFER);
+                    for (int i = 0; i < BUFFER; i++) {
+                        output_arr[i].resize(2);
+                    }
 
-        std::string request(buffer);
-        if (request.find("GET") != std::string::npos) {
-            handleGetRequest(clientSocket);
-        } else if (request.find("POST") != std::string::npos) {
-            handlePostRequest(clientSocket, request);
+                    // Парсим выражение
+                    parser(output_arr, i_out_arr, function);
+
+                    // Расчёт координат
+                    std::vector<std::vector<double>> coordinate_arr;
+                    int size = RIGHT_BORDER * 2 * 1 / SHIFT + 1;
+                    coordinate_arr.resize(size);
+                    for (int i = 0; i < size; i++) {
+                        coordinate_arr[i].resize(2);
+                    }
+                    calculating_coordinate(output_arr, i_out_arr, coordinate_arr);
+
+                    // Преобразуем массив координат в JSON
+                    std::string jsonResponse = coordinatesToJson(coordinate_arr);
+
+                    // Отправляем ответ
+                    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: " +
+                                           std::to_string(jsonResponse.size()) + "\r\n\r\n" + jsonResponse;
+                    send(clientSocket, response.c_str(), response.size(), 0);
+                }
+            else {
+                std::string response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\nНекорректная функция";
+                send(clientSocket, response.c_str(), response.size(), 0);
+                
+            }
         }
     }
+}
     else {
-        std::cerr << "Error receiving data from client: " << WSAGetLastError() << std::endl;
+        std::string response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/plain\r\n\r\nМетод не поддерживается";
+        send(clientSocket, response.c_str(), response.size(), 0);
     }
 
     closesocket(clientSocket);
 }
 
-
 int main() {
-    setlocale(LC_ALL, "Russian");
-    if (!initWinsock()) {
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "WSAStartup failed: " << WSAGetLastError() << std::endl;
         return 1;
     }
 
-    SOCKET serverSocket = createServerSocket();
+    SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (serverSocket == INVALID_SOCKET) {
+        std::cerr << "Socket creation failed: " << WSAGetLastError() << std::endl;
+        WSACleanup();
+        return 1;
+    }
 
-    // Привязываем сокет к порту 8080 и начинаем слухать
-    bindAndListen(serverSocket, 8080);
+    sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = INADDR_ANY;
+    serverAddr.sin_port = htons(PORT);
+
+    if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+        std::cerr << "Bind failed: " << WSAGetLastError() << std::endl;
+        closesocket(serverSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    if (listen(serverSocket, SOMAXCONN) == SOCKET_ERROR) {
+        std::cerr << "Listen failed: " << WSAGetLastError() << std::endl;
+        closesocket(serverSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    std::cout << "Сервер запущен на порту " << PORT << std::endl;
 
     while (true) {
-        sockaddr_in clientAddr;
-        int clientAddrSize = sizeof(clientAddr);
-        SOCKET clientSocket = accept(serverSocket, (sockaddr*)&clientAddr, &clientAddrSize);
-        if (clientSocket == INVALID_SOCKET) {
-            std::cerr << "Error accepting connection: " << WSAGetLastError() << std::endl;
-            continue;
+        SOCKET clientSocket = accept(serverSocket, nullptr, nullptr);
+        if (clientSocket != INVALID_SOCKET) {
+            handleClient(clientSocket);
         }
-
-        // обрабатываем клиента
-        handleClient(clientSocket);
+        else {
+            std::cerr << "Accept failed: " << WSAGetLastError() << std::endl;
+        }
     }
 
     closesocket(serverSocket);
