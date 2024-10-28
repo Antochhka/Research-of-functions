@@ -17,7 +17,6 @@ test.o:
 
 validator.o:
 	$(GCC) -c $(flag) validator.cpp
-	
 
 start:
 	./result

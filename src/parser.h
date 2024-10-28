@@ -82,4 +82,7 @@ bool checkOperands(const std::string &expression, std::string &error);
 // Основная функция-валидатор
 bool validateMathExpression(const std::string &expression);
 
+bool checkFunctionNames(const std::string& expression, std::string& error);
+
+
 #endif  // PARSER_H
