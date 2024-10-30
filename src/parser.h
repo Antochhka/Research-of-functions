@@ -3,19 +3,20 @@
 #define PARSER_H
 
 #include <cctype>
+#include <cmath>
 #include <iostream>
+#include <limits>
 #include <locale>
 #include <regex>
 #include <stack>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "class.h"
 
 enum TokenType {
     BUFFER = 100,
-    LEFT_BORDER = -1,
-    RIGHT_BORDER = 1,
     Y = 0,
     NONE = 0,
     CODIF = 0,
@@ -41,6 +42,8 @@ enum TokenType {
 };
 
 #define SHIFT 0.1
+#define LEFT_BORDER -5
+#define RIGHT_BORDER 5
 
 using namespace std;
 
@@ -56,9 +59,10 @@ void stack_in_output_arr(Stack<char> &operations_stack, vector<vector<double>> &
 unsigned int is_func(unsigned int &i, string &input, char &result);
 
 // calculation.cpp
+
 double calculator(vector<vector<double>> &output_arr, unsigned int &i_out_arr, double &coordinate_x);
 void calculating_coordinate(vector<vector<double>> &output_arr, unsigned int &i_out_arr,
-                            vector<vector<double>> &coordinate_arr);
+                            vector<vector<double>> &coordinate_arr, vector<pair<double, double>> intervals);
 
 void print_coordinate_arr(vector<vector<double>> &coordinate_arr);
 
@@ -82,7 +86,12 @@ bool checkOperands(const std::string &expression, std::string &error);
 // Основная функция-валидатор
 bool validateMathExpression(const std::string &expression);
 
-bool checkFunctionNames(const std::string& expression, std::string& error);
+bool checkFunctionNames(const std::string &expression, std::string &error);
 
+// scope_of_definition
+
+void print_intervals(vector<pair<double, double>> &intervals);
+void check_nan_by_range(vector<vector<double>> &output_arr, unsigned int &i_out_arr, vector<bool> &nan_arr);
+void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &intervals);
 
 #endif  // PARSER_H

@@ -59,4 +59,18 @@ class Stack {
     ~Stack() { data.clear(); }
 };
 
+class Interval {
+   public:
+    vector<pair<double, double>> interval;
+
+    void add_log_interval(double& num) {
+        interval.push_back({num - 1, std::numeric_limits<double>::infinity()});
+    }
+
+    void add_dev_interval(double& num) {
+        interval.push_back({-std::numeric_limits<double>::infinity(),num - 1});
+        interval.push_back({num - 1, std::numeric_limits<double>::infinity()});
+    }
+};
+
 #endif

@@ -93,11 +93,20 @@ double calculator(vector<vector<double>> &output_arr, unsigned int &i_out_arr, d
 }
 
 void calculating_coordinate(vector<vector<double>> &output_arr, unsigned int &i_out_arr,
-                            vector<vector<double>> &coordinate_arr) {
-    for (unsigned int i = 0; i < coordinate_arr.size(); i++) {
-        double x_value = LEFT_BORDER + i * SHIFT;
-        coordinate_arr[i][X] = x_value;
-        coordinate_arr[i][Y] = calculator(output_arr, i_out_arr, x_value);
+                            vector<vector<double>> &coordinate_arr, vector<pair<double, double>> intervals) {
+    const double EPSILON = 1e-9; // Маленькое число для сравнения
+    for (unsigned int  i = 0; i < intervals.size(); i++) {
+        double x = intervals[i].first + SHIFT;
+        while (x < intervals[i].second - EPSILON && x <= RIGHT_BORDER) {
+
+            if (std::isinf(x)) {
+                x = LEFT_BORDER;
+            }
+            double y = calculator(output_arr, i_out_arr, x);
+            vector<double> new_coordinates = {y, x};
+            coordinate_arr.push_back(new_coordinates);
+            x += SHIFT;
+        }
     }
 }
 
