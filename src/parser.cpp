@@ -16,7 +16,7 @@ void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr, string 
             output_arr[i_out_arr][DATA] = NONE;
             i_out_arr++;
         } else if (operators.find(el) != string::npos || functions.find(el) != string::npos) {
-            if (el == '-' &&
+            if (el == '-' && input[i - 1] != 'x' &&
                 (i == 0 || input[i - 1] == '(' || input[i - 1] == ')' || (!isdigit(input[i - 1])))) {
                 operations_stack.push('`');
             } else {

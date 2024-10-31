@@ -8,8 +8,8 @@ void print_intervals(vector<pair<double, double>> &intervals) {
 }
 
 void check_nan_by_range(vector<vector<double>> &output_arr, unsigned int &i_out_arr, vector<bool> &nan_arr) {
-    for (unsigned int i = 0; i < nan_arr.size(); i ++) {
-        double x  = LEFT_BORDER + i * SHIFT;
+    for (unsigned int i = 0; i < nan_arr.size(); i++) {
+        double x = LEFT_BORDER + i * SHIFT;
         double res = calculator(output_arr, i_out_arr, x);
         if (std::isnan(res) || std::isinf(res)) {
             nan_arr[i] = false;
@@ -26,7 +26,7 @@ void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &inter
         start = -numeric_limits<double>::infinity();
         open = true;
     }
-    for (unsigned int  i = 1; i < nan_arr.size(); i++) {
+    for (unsigned int i = 1; i < nan_arr.size(); i++) {
         if (open == true && !nan_arr[i]) {
             open = false;
             double end = LEFT_BORDER + i * SHIFT;
@@ -34,7 +34,7 @@ void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &inter
         } else if (open == false && nan_arr[i]) {
             open = true;
             if (intervals.size() != 0) {
-            start = intervals[intervals.size() - 1].second;
+                start = intervals[intervals.size() - 1].second;
             }
         }
     }

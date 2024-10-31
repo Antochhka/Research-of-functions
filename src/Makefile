@@ -3,8 +3,8 @@ GCC = g++
 
 all: build
 
-build: validator.o parser.o test.o calculation.o scope_of_definition.o
-	$(GCC) -o result validator.o scope_of_definition.o parser.o calculation.o test.o
+build: validator.o parser.o test.o calculation.o scope_of_definition.o break_points.o
+	$(GCC) -o result validator.o scope_of_definition.o break_points.o parser.o calculation.o test.o
 
 parser.o:
 	$(GCC) -c $(flag) parser.cpp
@@ -21,6 +21,8 @@ validator.o:
 scope_of_definition.o:
 	$(GCC) -c $(flag) scope_of_definition.cpp
 
+break_points.o:
+	$(GCC) -c $(flag) break_points.cpp
 
 start:
 	./result

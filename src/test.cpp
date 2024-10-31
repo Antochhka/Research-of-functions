@@ -3,6 +3,7 @@
 
 int main() {
     vector<vector<double>> output_arr;
+    vector<pair<double, int>> break_points;
     vector<pair<double, double>> intervals;
     vector<bool> nan_arr;
     int size = RIGHT_BORDER * 2 * 1 / SHIFT + 1;
@@ -22,5 +23,8 @@ int main() {
         print_intervals(intervals);
         calculating_coordinate(output_arr, i_out_arr, coordinate_arr, intervals);
         print_coordinate_arr(coordinate_arr);
+        search_break_points(intervals, break_points, output_arr, i_out_arr);
+        print_break_points(break_points);
+
     }
 }

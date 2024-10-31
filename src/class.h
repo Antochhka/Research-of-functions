@@ -68,7 +68,7 @@ class Interval {
     }
 
     void add_dev_interval(double& num) {
-        interval.push_back({-std::numeric_limits<double>::infinity(),num - 1});
+        interval.push_back({-std::numeric_limits<double>::infinity(), num - 1});
         interval.push_back({num - 1, std::numeric_limits<double>::infinity()});
     }
 };

@@ -17,6 +17,9 @@
 
 enum TokenType {
     BUFFER = 100,
+    BP_1 = 1,
+    DBP_1 = 2,
+    BP_2 = 3,
     Y = 0,
     NONE = 0,
     CODIF = 0,
@@ -88,10 +91,19 @@ bool validateMathExpression(const std::string &expression);
 
 bool checkFunctionNames(const std::string &expression, std::string &error);
 
+
 // scope_of_definition
 
 void print_intervals(vector<pair<double, double>> &intervals);
 void check_nan_by_range(vector<vector<double>> &output_arr, unsigned int &i_out_arr, vector<bool> &nan_arr);
 void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &intervals);
+
+
+//break_points
+
+void search_break_points(vector<pair<double, double>> &intervals, vector<pair<double, int>> &break_points,
+                  vector<vector<double>> &output_arr, unsigned int &i_out_arr);
+void print_break_points(vector<pair<double, int>> &break_points);
+
 
 #endif  // PARSER_H
