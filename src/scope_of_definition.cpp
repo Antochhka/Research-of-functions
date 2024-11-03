@@ -22,8 +22,9 @@ void check_nan_by_range(vector<vector<double>> &output_arr, unsigned int &i_out_
 void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &intervals) {
     bool open = false;
     double start = 0.0;
+    double const INF = 1e+10;
     if (nan_arr[0]) {
-        start = -numeric_limits<double>::infinity();
+        start = -INF;
         open = true;
     }
     for (unsigned int i = 1; i < nan_arr.size(); i++) {
@@ -35,11 +36,13 @@ void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &inter
             open = true;
             if (intervals.size() != 0) {
                 start = intervals[intervals.size() - 1].second;
+            } else {
+                start = LEFT_BORDER + i * SHIFT - SHIFT;
             }
         }
     }
     if (open) {
-        double end = numeric_limits<double>::infinity();
+        double end = INF;
         intervals.push_back({start, end});
     }
 }

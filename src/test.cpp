@@ -2,22 +2,22 @@
 #include "parser.h"
 
 int main() {
-    vector<vector<double>> output_arr;
-    vector<pair<double, int>> break_points;
-    vector<pair<double, double>> intervals;
-    vector<bool> nan_arr;
-    int size = RIGHT_BORDER * 2 * 1 / SHIFT + 1;
-    nan_arr.resize(size);
-    unsigned int i_out_arr = 0;
-    output_arr.resize(BUFFER);
-    for (int i = 0; i < BUFFER; i++) {
-        output_arr[i].resize(2);
-    }
     string input;
     getline(cin, input);
     if (validateMathExpression(input)) {
-        parser(output_arr, i_out_arr, input);
+        vector<vector<double>> output_arr;
+        vector<bool> nan_arr;
+        vector<pair<double, double>> intervals;
+        vector<pair<double, int>> break_points;
         vector<vector<double>> coordinate_arr;
+        unsigned int i_out_arr = 0;
+        output_arr.resize(BUFFER);
+        for (int i = 0; i < BUFFER; i++) {
+            output_arr[i].resize(2);
+        }
+        parser(output_arr, i_out_arr, input);
+        int size = RIGHT_BORDER * 2 * 1 / SHIFT + 1;
+        nan_arr.resize(size);
         check_nan_by_range(output_arr, i_out_arr, nan_arr);
         create_intervals(nan_arr, intervals);
         print_intervals(intervals);

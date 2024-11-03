@@ -2,8 +2,8 @@
 
 void search_break_points(vector<pair<double, double>> &intervals, vector<pair<double, int>> &break_points,
                   vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
-    double EPSILON = 1e-15;
-    double INF = 1e+9;
+    double EPSILON = 8.85 * 1e-12;
+    double INF = 1e+10;
     for (unsigned int i = 0; i < intervals.size() - 1; i++) {
         if (intervals[i].second == intervals[i + 1].first) {
             double break_point = intervals[i].second;

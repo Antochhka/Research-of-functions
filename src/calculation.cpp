@@ -94,12 +94,13 @@ double calculator(vector<vector<double>> &output_arr, unsigned int &i_out_arr, d
 
 void calculating_coordinate(vector<vector<double>> &output_arr, unsigned int &i_out_arr,
                             vector<vector<double>> &coordinate_arr, vector<pair<double, double>> intervals) {
-    const double EPSILON = 1e-9; // Маленькое число для сравнения
+    const double EPSILON = 8.85 * 1e-12; // Маленькое число для сравнения
+    const double INF = 1e+10;
     for (unsigned int  i = 0; i < intervals.size(); i++) {
         double x = intervals[i].first + SHIFT;
         while (x < intervals[i].second - EPSILON && x <= RIGHT_BORDER) {
 
-            if (std::isinf(x)) {
+            if (x == -INF + SHIFT) {
                 x = LEFT_BORDER;
             }
             double y = calculator(output_arr, i_out_arr, x);
