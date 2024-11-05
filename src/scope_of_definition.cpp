@@ -23,6 +23,7 @@ void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &inter
     bool open = false;
     double start = 0.0;
     double const INF = 1e+10;
+    double const EPSILON = 8.85 * 1e-12;
     if (nan_arr[0]) {
         start = -INF;
         open = true;
@@ -38,6 +39,9 @@ void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &inter
                 start = intervals[intervals.size() - 1].second;
             } else {
                 start = LEFT_BORDER + i * SHIFT - SHIFT;
+                if (fabs(start) <= EPSILON) {
+                    start = 0.0;
+                }
             }
         }
     }

@@ -91,19 +91,25 @@ bool validateMathExpression(const std::string &expression);
 
 bool checkFunctionNames(const std::string &expression, std::string &error);
 
-
-// scope_of_definition
+// scope_of_definition.cpp
 
 void print_intervals(vector<pair<double, double>> &intervals);
 void check_nan_by_range(vector<vector<double>> &output_arr, unsigned int &i_out_arr, vector<bool> &nan_arr);
 void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &intervals);
 
-
-//break_points
+// break_points.cpp
 
 void search_break_points(vector<pair<double, double>> &intervals, vector<pair<double, int>> &break_points,
-                  vector<vector<double>> &output_arr, unsigned int &i_out_arr);
+                         vector<vector<double>> &output_arr, unsigned int &i_out_arr);
 void print_break_points(vector<pair<double, int>> &break_points);
 
+// asymptote.cpp
+
+void search_vertical_asymptote(vector<pair<double, double>> &intervals, vector<vector<double>> &output_arr,
+                               unsigned int &i_out_arr, vector<double> &vertical_asymptote);
+void print_vertical_asymptote(vector<double> &vertical_asymptote);
+pair<double, double> search_horizontal_asymptote(vector<pair<double, double>> &intervals,
+                                                 vector<vector<double>> &output_arr,
+                                                 unsigned int &i_out_arr);
 
 #endif  // PARSER_H
