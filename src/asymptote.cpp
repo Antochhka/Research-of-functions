@@ -30,23 +30,32 @@ pair<double, double> search_horizontal_asymptote(vector<pair<double, double>> &i
                                                  vector<vector<double>> &output_arr,
                                                  unsigned int &i_out_arr) {
     double INF = 1e+10;
+    double k = 0.0;
+    double b = 0.0;
+    const double ERROR = 228.0;
     if (intervals[0].first == -INF && intervals[intervals.size() - 1].second == INF) {
-        double k = calculator(output_arr, i_out_arr, INF) / INF;
+        k = calculator(output_arr, i_out_arr, INF) / INF;
+        bool flag = true;
         if (std::isinf(k)) {
-            return;
+            flag = false;
         }
         INF = 1e+5;
-        double b = (calculator(output_arr, i_out_arr, INF)) - (k * INF);
+        b = (calculator(output_arr, i_out_arr, INF)) - (k * INF);
         if (b < 0) {
             b = std::floor(b);
-        } else {
+        } 
+        else {
             b = std::ceil(b);
         }
         if (std::isinf(b)) {
-            return;
+            flag = false;
         }
         printf("k = %lf b = %lf\n", k, b);
+        if (!flag) {
+            return {ERROR, ERROR};
+        }
     }
+    return {k, b};
 }
 
 void print_vertical_asymptote(vector<double> &vertical_asymptote) {
