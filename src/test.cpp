@@ -18,6 +18,14 @@ int main() {
             output_arr[i].resize(2);
         }
         parser(output_arr, i_out_arr, input);
+        // bool tg_or_ctg = check_tg_or_ctg(output_arr)
+
+        // for (i < output_arr.size; i ++) {
+        //     res = 0;
+        //     if (output_arr[CODIF] == TG) {
+        //         res 1;
+        // }
+        // return res;
         int size = RIGHT_BORDER * 2 * 1 / SHIFT + 1;
         nan_arr.resize(size);
         check_nan_by_range(output_arr, i_out_arr, nan_arr);

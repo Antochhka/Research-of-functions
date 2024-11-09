@@ -10,6 +10,9 @@ void print_intervals(vector<pair<double, double>> &intervals) {
 void check_nan_by_range(vector<vector<double>> &output_arr, unsigned int &i_out_arr, vector<bool> &nan_arr) {
     for (unsigned int i = 0; i < nan_arr.size(); i++) {
         double x = LEFT_BORDER + i * SHIFT;
+        // if (булевое значение = тру и остаточк x / 1.57 == 0) {
+        //     nan_arr[i] = false;
+        // }
         double res = calculator(output_arr, i_out_arr, x);
         if (std::isnan(res) || std::isinf(res)) {
             nan_arr[i] = false;
