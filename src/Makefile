@@ -36,6 +36,11 @@ clang:
 cppcheck:
 	cppcheck --enable=all --suppress=missingIncludeSystem *.h *.cpp
 
+git:
+	git add *.cpp *.h
+	git commit -m "."
+	git push origin Antochhka_develop 
+
 rebuild: clean build start
 
 clean:
