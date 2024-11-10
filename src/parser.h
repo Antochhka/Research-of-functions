@@ -146,6 +146,23 @@ pair<double, double> search_horizontal_asymptote(vector<pair<double, double>> &i
 // Функция проверки вхождения тангенса
 bool tg_check(const vector<vector<double>> &output_arr);
 
+//func_period_check.cpp
+
+// Функция для проверки, является ли функция периодичной
+bool isFunctionPeriodic(vector<vector<double>> &output_arr, unsigned int &i_out_arr);
+
+// Функция для нахождения периода функции, если она периодичная
+std::string findFunctionPeriod(vector<vector<double>> &output_arr, unsigned int &i_out_arr);
+
+//func_sym_check.cpp
+
+// Функция для проверки четности функции
+std::string checkFunctionSymmetry(vector<vector<double>> &output_arr, unsigned int &i_out_arr);
+
+
+
+
+
 #endif  // PARSER_H
 
 //07.11.24 Изменена структура + добавлены коменнтарии для улучшения читаемости кода

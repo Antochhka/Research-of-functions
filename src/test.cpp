@@ -2,6 +2,7 @@
 #include "parser.h"
 
 int main() {
+    setlocale(LC_ALL,"Ru");
     string input;
     getline(cin, input);
     if (validateMathExpression(input)) {
@@ -18,16 +19,9 @@ int main() {
             output_arr[i].resize(2);
         }
         parser(output_arr, i_out_arr, input);
-        // bool tg_or_ctg = check_tg_or_ctg(output_arr)
-
-        // for (i < output_arr.size; i ++) {
-        //     res = 0;
-        //     if (output_arr[CODIF] == TG) {
-        //         res 1;
-        // }
-        // return res;
         int size = RIGHT_BORDER * 2 * 1 / SHIFT + 1;
         nan_arr.resize(size);
+        //bool tgc = tg_check(output_arr);
         check_nan_by_range(output_arr, i_out_arr, nan_arr);
         create_intervals(nan_arr, intervals);
         calculating_coordinate(output_arr, i_out_arr, coordinate_arr, intervals);
@@ -38,5 +32,16 @@ int main() {
         print_break_points(break_points);
         print_vertical_asymptote(vertical_asymptote);
         horizontal_asymptote = search_horizontal_asymptote(intervals, output_arr, i_out_arr);
+        //new func
+        std::string result = checkFunctionSymmetry(output_arr, i_out_arr);
+        cout << result << endl;
+        bool is_periodic = isFunctionPeriodic(output_arr, i_out_arr);
+        if (is_periodic) {
+        std::string result = findFunctionPeriod(output_arr, i_out_arr);
+        cout << result << endl;
+    } else {
+        cout << "Function is not periodic on the given interval" << endl;
     }
+    }
+    return 0;
 }
