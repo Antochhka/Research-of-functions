@@ -13,13 +13,16 @@
     <h1>Построение графика функции</h1>
 
     <form id="form">
-        <input type="text" id="functionInput" placeholder="Введите функцию, например: Math.sin(x)">
+        <input type="text" id="functionInput" placeholder="Введите функцию, например: sin(x)">
         <button type="submit" id="button" onclick="plotGraph(event)">Построить график</button>
     </form>
 
-
-
     <div id="plot" style="display: none;"></div>
+
+    <div id="steps" style="display: none;">
+        <h3>Анализ функции:</h3>
+        <ul id="stepsList"></ul>
+    </div>
 
     <script src="index.js"></script>
 </body>

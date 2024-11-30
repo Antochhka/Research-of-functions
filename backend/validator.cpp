@@ -1,3 +1,5 @@
+#include "validator.h"
+
 #include <cctype>
 #include <iostream>
 #include <locale>
@@ -5,13 +7,17 @@
 #include <stack>
 #include <string>
 
+#include "analysis.h"
+#include "calculation.h"
+#include "parser.h"
+
 // Функция для проверки правильности использования скобок
 bool checkBrackets(const std::string& expression, std::string& error) {
     std::stack<int> bracketStack;
     for (size_t i = 0; i < expression.size(); ++i) {
         char c = expression[i];
         if (c == '(') {
-            bracketStack.push(i);
+            bracketStack.push(static_cast<int>(i));
         } else if (c == ')') {
             if (bracketStack.empty()) {
                 error = "Закрывающая скобка без открывающей в позиции: " + std::to_string(i);
@@ -56,20 +62,33 @@ bool checkValidCharacters(const std::string& expression, std::string& error) {
 // Функция для проверки правильного использования операторов
 bool checkOperators(const std::string& expression, std::string& error) {
     std::string operators = "+-*/^";
-    bool lastWasOperator = true;  // Начинаем с true для предотвращения строки, начинающейся с оператора
+    bool lastWasOperator = true;  // Начинаем с true для предотвращения строки,
+                                  // начинающейся с оператора
 
     for (size_t i = 0; i < expression.size(); ++i) {
         char c = expression[i];
 
         if (operators.find(c) != std::string::npos) {
+            // Специальный случай: оператор '-' допустим перед переменной или функцией
+            // (например, -x или sin(-x))
+            if (c == '-' && (i == 0 || expression[i - 1] == '(')) {
+                lastWasOperator = false;
+                continue;
+            }
+            // Если предыдущий символ был оператором, то текущий оператор использовать
+            // нельзя
             if (lastWasOperator) {
                 error = "Неправильное использование оператора в позиции: " + std::to_string(i);
                 return false;
             }
+            // Обновляем флаг, так как текущий символ — оператор
             lastWasOperator = true;
         } else if (c == '(' || c == ')') {
+            // Обновляем флаг в зависимости от того, открывающая или закрывающая
+            // скобка
             lastWasOperator = (c == '(');
         } else {
+            // Если текущий символ не оператор, сбрасываем флаг
             lastWasOperator = false;
         }
     }
@@ -90,32 +109,66 @@ bool checkOperands(const std::string& expression, std::string& error) {
     return true;
 }
 
+// Функция для проверки корректности имен функций (например, sin, cos и т.д.)
+bool checkFunctionNames(const std::string& expression, std::string& error) {
+    static const std::vector<std::string> validFunctions = {
+        "sin", "cos", "tan", "exp", "ln", "asin", "acos", "atg", "sqrt", "log",
+    };
+    std::regex functionCallRegex("[a-zA-Z]+\\(");  // Регулярное выражение для поиска возможных вызовов
+                                                   // функций
+    std::sregex_iterator words_begin(expression.begin(), expression.end(), functionCallRegex);
+    std::sregex_iterator words_end;
+
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        std::string match = (*i).str();
+        // Удаляем '(' для проверки функции
+        match.pop_back();
+        if (std::find(validFunctions.begin(), validFunctions.end(), match) == validFunctions.end()) {
+            error = "Некорректное имя функции: " + match;
+            return false;
+        }
+    }
+    return true;
+}
+
 // Основная функция-валидатор
 bool validateMathExpression(const std::string& expression) {
     std::string error;
+    // Удаляем все пробелы из строки перед началом проверки
     std::string cleanedExpression = removeSpaces(expression);
 
+    // Проверка на пустую строку
     if (cleanedExpression.empty()) {
         std::cout << "Ошибка: Пустая строка." << std::endl;
         return false;
     }
 
+    // Проверка на правильность скобок
     if (!checkBrackets(cleanedExpression, error)) {
         std::cout << "Ошибка: " << error << std::endl;
         return false;
     }
 
+    // Проверка на допустимые символы
     if (!checkValidCharacters(cleanedExpression, error)) {
         std::cout << "Ошибка: " << error << std::endl;
         return false;
     }
 
+    // Проверка на правильное использование операторов
     if (!checkOperators(cleanedExpression, error)) {
         std::cout << "Ошибка: " << error << std::endl;
         return false;
     }
 
+    // Проверка на наличие операндов в строке
     if (!checkOperands(cleanedExpression, error)) {
+        std::cout << "Ошибка: " << error << std::endl;
+        return false;
+    }
+
+    // Проверка корректности имен функций
+    if (!checkFunctionNames(cleanedExpression, error)) {
         std::cout << "Ошибка: " << error << std::endl;
         return false;
     }
@@ -123,3 +176,5 @@ bool validateMathExpression(const std::string& expression) {
     std::cout << "Строка корректна." << std::endl;
     return true;
 }
+
+// 24.11.24 Добавлена читаемость и комментарии

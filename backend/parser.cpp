@@ -1,4 +1,3 @@
-// parser.cpp
 #include "parser.h"
 
 void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr, string &input) {
@@ -7,27 +6,33 @@ void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr, string 
     Stack<char> operations_stack;
     string operators = "+-*/^";
     string functions = "sctahgqelo";  // sin, cos, tan, asin, acos, atan, log, exp, sqrt,
+
+    // Основной цикл для обработки входной строки
     while (input[i]) {
         char el = input[i];
-        if (isdigit(el)) {
+        if (isdigit(el)) {  // Если символ - число, вызываем обработку числа
             i += is_digit(i, input, sum, output_arr, i_out_arr);
-        } else if (el == 'x') {
+        } else if (el == 'x') {  // Если символ - переменная 'x'
             output_arr[i_out_arr][CODIF] = X;
             output_arr[i_out_arr][DATA] = NONE;
             i_out_arr++;
-        } else if (operators.find(el) != string::npos || functions.find(el) != string::npos) {
-            if (el == '-' &&
+        } else if (operators.find(el) != string::npos ||
+                   functions.find(el) != string::npos) {  // Если символ - оператор или функция
+            // Проверка, является ли текущий минус унарным
+            if (el == '-' && input[i - 1] != 'x' &&
                 (i == 0 || input[i - 1] == '(' || input[i - 1] == ')' || (!isdigit(input[i - 1])))) {
-                operations_stack.push('`');
+                operations_stack.push('`');  // Добавляем унарный минус
             } else {
                 char res = ' ';
-                if (functions.find(el) != string::npos) {
+                if (functions.find(el) != string::npos) {  // Если это функция (например, sin, cos)
                     i += is_func(i, input, res);
-                    cout << res;
+                    cout << res;  // Выводим символ функции
                 } else {
-                    res = el;
+                    res = el;  // Если это оператор
                 }
 
+                // Переносим операции с более высоким приоритетом из стека в выходной
+                // массив
                 while (!operations_stack.is_empty() && operations_stack.peak() != '(' &&
                        (priority(res) < priority(operations_stack.peak()))) {
                     output_arr[i_out_arr][CODIF] = codifications(operations_stack.pop());
@@ -35,29 +40,30 @@ void parser(vector<vector<double>> &output_arr, unsigned int &i_out_arr, string 
                     i_out_arr++;
                 }
 
-                operations_stack.push(res);
+                operations_stack.push(res);  // Добавляем текущий оператор/функцию в стек
             }
-
-        } else if (el == '(') {
+        } else if (el == '(') {  // Если символ - открывающая скобка
             operations_stack.push(el);
-        } else if (el == ')') {
-            while (operations_stack.peak() != '(') {
+        } else if (el == ')') {  // Если символ - закрывающая скобка
+            while (operations_stack.peak() != '(') {  // Извлекаем все до открывающей скобки
                 output_arr[i_out_arr][CODIF] = codifications(operations_stack.pop());
                 output_arr[i_out_arr][DATA] = NONE;
                 i_out_arr++;
             }
-            operations_stack.pop();
+            operations_stack.pop();  // Удаляем открывающую скобку из стека
         }
-        operations_stack.print_stack();
-        print_arr(output_arr, i_out_arr);
+        operations_stack.print_stack();  // Печать текущего содержимого стека (для отладки)
+        print_arr(output_arr, i_out_arr);  // Печать выходного массива (для отладки)
         i++;
     }
-    stack_in_output_arr(operations_stack, output_arr, i_out_arr);
+    stack_in_output_arr(operations_stack, output_arr,
+                        i_out_arr);  // Переносим оставшиеся операции из стека в выходной массив
     std::cout << endl << endl << "FINISH:" << endl;
-    print_arr(output_arr, i_out_arr);
+    print_arr(output_arr, i_out_arr);  // Печать окончательного выходного массива
 }
 
 void print_arr(vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
+    // Печать содержимого выходного массива
     std::cout << "In output string:" << endl;
     for (unsigned int i = 0; i < i_out_arr; i++) {
         printf("[%d]: codif: %.0lf elem: %.2lf\n", i, output_arr[i][0], output_arr[i][1]);
@@ -67,6 +73,7 @@ void print_arr(vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
 
 unsigned int is_digit(unsigned int &i, string &input, double &sum, vector<vector<double>> &output_arr,
                       unsigned int &i_out_arr) {
+    // Обработка числовых значений в строке и их добавление в выходной массив
     unsigned int indx = i;
     string double_num = "";
     while (indx < input.size() && (isdigit(input[indx]) || input[indx] == '.')) {
@@ -82,22 +89,22 @@ unsigned int is_digit(unsigned int &i, string &input, double &sum, vector<vector
 }
 
 unsigned int priority(char el) {
+    // Определение приоритета операторов
     unsigned int priority = 0;
     switch (el) {
         case '(':
             priority = 0;
             break;
         case '+':
-            priority = 1;
-            break;
         case '-':
             priority = 1;
             break;
         case '*':
-            priority = 2;
-            break;
         case '/':
             priority = 2;
+            break;
+        case '^':
+            priority = 3;
             break;
         default:
             priority = 3;
@@ -107,6 +114,7 @@ unsigned int priority(char el) {
 }
 
 unsigned int codifications(char el) {
+    // Определение кодировки для операторов и функций
     unsigned int codification = 0;
     switch (el) {
         case '+':
@@ -166,6 +174,7 @@ unsigned int codifications(char el) {
 
 void stack_in_output_arr(Stack<char> &operations_stack, vector<vector<double>> &output_arr,
                          unsigned int &i_out_arr) {
+    // Перенос всех оставшихся операторов из стека в выходной массив
     while (!operations_stack.is_empty()) {
         char el = operations_stack.pop();
         output_arr[i_out_arr][CODIF] = codifications(el);
@@ -175,38 +184,56 @@ void stack_in_output_arr(Stack<char> &operations_stack, vector<vector<double>> &
 }
 
 unsigned int is_func(unsigned int &i, string &input, char &result) {
+    // Проверка на наличие функции в текущей позиции строки
     unsigned int count = 0;
-    if (input[i] == 's' && input[i + 1] == 'i' && input[i + 2] == 'n') {
+    if (i + 2 < input.size() && input[i] == 's' && input[i + 1] == 'i' && input[i + 2] == 'n') {
         result = 's';
         count = 2;
-    } else if (input[i] == 'c' && input[i + 1] == 'o' && input[i + 2] == 's') {
+    } else if (i + 2 < input.size() && input[i] == 'c' && input[i + 1] == 'o' && input[i + 2] == 's') {
         result = 'c';
         count = 2;
-    } else if (input[i] == 't' && input[i + 1] == 'g') {
+    } else if (i + 1 < input.size() && input[i] == 't' && input[i + 1] == 'a' && input[i + 2] == 'n') {
         result = 't';
-        count = 1;
-    } else if (input[i] == 'a' && input[i + 1] == 's' && input[i + 2] == 'i' && input[i + 3] == 'n') {
+        count = 2;
+    } else if (i + 3 < input.size() && input[i] == 'a' && input[i + 1] == 's' && input[i + 2] == 'i' &&
+               input[i + 3] == 'n') {
         result = 'a';
         count = 3;
-    } else if (input[i] == 'a' && input[i + 1] == 'c' && input[i + 2] == 'o' && input[i + 3] == 's') {
+    } else if (i + 3 < input.size() && input[i] == 'a' && input[i + 1] == 'c' && input[i + 2] == 'o' &&
+               input[i + 3] == 's') {
         result = 'h';
         count = 3;
-    } else if (input[i] == 'a' && input[i + 1] == 't' && input[i + 2] == 'g') {
+    } else if (i + 2 < input.size() && input[i] == 'a' && input[i + 1] == 't' && input[i + 2] == 'g') {
         result = 'g';
         count = 2;
-    } else if (input[i] == 's' && input[i + 1] == 'q' && input[i + 2] == 'r' && input[i + 3] == 't') {
+    } else if (i + 3 < input.size() && input[i] == 's' && input[i + 1] == 'q' && input[i + 2] == 'r' &&
+               input[i + 3] == 't') {
         result = 'q';
         count = 3;
-    } else if (input[i] == 'e' && input[i + 1] == 'x' && input[i + 2] == 'p') {
+    } else if (i + 2 < input.size() && input[i] == 'e' && input[i + 1] == 'x' && input[i + 2] == 'p') {
         result = 'e';
         count = 2;
-    } else if (input[i] == 'l' && input[i + 1] == 'o' && input[i + 2] == 'g') {
+    } else if (i + 2 < input.size() && input[i] == 'l' && input[i + 1] == 'o' && input[i + 2] == 'g') {
         result = 'l';
         count = 2;
-    } else if (input[i] == 'l' && input[i + 1] == 'o' && input[i + 2] == 'g' && input[i + 3] == '1' &&
-               input[i + 4] == '0') {
+    } else if (i + 4 < input.size() && input[i] == 'l' && input[i + 1] == 'o' && input[i + 2] == 'g' &&
+               input[i + 3] == '1' && input[i + 4] == '0') {
         result = 'o';
         count = 4;
     }
     return count;
 }
+
+bool tg_check(const vector<vector<double>> &output_arr) {
+    for (const auto &row : output_arr) {
+        if (static_cast<TokenType>(row[CODIF]) == TG) {  // Приведение к TokenType для сравнения
+            return true;
+        }
+    }
+    return false;
+}
+
+// 07.11.24 Добавлены коментарии, а также изменено: проверка проверки границ,
+// чтобы избежать выхода за пределы строки в is_func.
+//  А также в priority добавлен знак "^" с приоритетом 3.
+//  24.11.24 Добавлена читаемость и комментарии
