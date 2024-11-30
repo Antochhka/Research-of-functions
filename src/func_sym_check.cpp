@@ -1,4 +1,12 @@
+#include <cmath>
+#include <iostream>
+#include <vector>
+
+#include "analysis.h"
+#include "calculation.h"
+#include "class.h"
 #include "parser.h"
+#include "validator.h"
 
 using namespace std;
 
@@ -6,21 +14,24 @@ using namespace std;
 std::string checkFunctionSymmetry(vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
     double left_x = LEFT_BORDER;
     double right_x = RIGHT_BORDER;
-    
+
     // Вычисляем значения функции при крайних значениях x
     double y_left = calculator(output_arr, i_out_arr, left_x);
     double y_right = calculator(output_arr, i_out_arr, right_x);
 
     // Проверяем первое условие - если значения равны, функция четная
-    if (fabs(y_left - y_right) < 1e-9) { // Сравнение с учетом малой погрешности
+    if (fabs(y_left - y_right) < 1e-9) {  // Сравнение с учетом малой погрешности
         return "Function is even";
     }
 
     // Проверяем второе условие - если значения противоположны, функция нечетная
-    if (fabs(y_left + y_right) < 1e-9) { // Сравнение с учетом малой погрешности
+    if (fabs(y_left + y_right) < 1e-9) {  // Сравнение с учетом малой погрешности
         return "Function is odd";
     }
 
-    // Если ни одно из условий не выполняется, функция не является ни четной, ни нечетной
+    // Если ни одно из условий не выполняется, функция не является ни четной, ни
+    // нечетной
     return "Function is neither even nor odd";
 }
+
+// 24.11.24 Добавлена читаемость и комментарии

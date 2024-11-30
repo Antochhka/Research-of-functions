@@ -10,9 +10,9 @@ using namespace std;
 template <typename T>
 class Stack {
     static const int MSIZE = 10;  // Начальная емкость стека
-    vector<T> data;  // Вектор для хранения элементов стека
-    int top;  // Индекс верхнего элемента стека
-    int capacity;  // Текущая емкость стека
+    vector<T> data;               // Вектор для хранения элементов стека
+    int top;                      // Индекс верхнего элемента стека
+    int capacity;                 // Текущая емкость стека
 
    public:
     // Конструктор для инициализации стека
