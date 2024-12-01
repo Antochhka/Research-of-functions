@@ -46,8 +46,8 @@ enum TokenType {
 };
 
 #define SHIFT 0.01      // Сдвиг для численного расчета
-#define LEFT_BORDER -20  // Левая граница диапазона расчета
-#define RIGHT_BORDER 20 // Правая граница диапазона расчета
+#define LEFT_BORDER -3  // Левая граница диапазона расчета
+#define RIGHT_BORDER 3  // Правая граница диапазона расчета
 
 using namespace std;
 

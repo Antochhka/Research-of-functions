@@ -44,10 +44,10 @@ void search_vertical_asymptote(vector<pair<double, double>> &intervals, vector<v
 }
 
 // Функция для поиска горизонтальной асимптоты на основе интервалов
-pair<double, double> search_horizontal_asymptote(vector<pair<double, double>> &intervals,
-                                                 vector<vector<double>> &output_arr,
-                                                 unsigned int &i_out_arr, std::pair &k_b) {
+void search_horizontal_asymptote(vector<pair<double, double>> &intervals, vector<vector<double>> &output_arr,
+                                 unsigned int &i_out_arr, vector<double> &k_b_index) {
     double INF = 1e+10;  // Приближенное значение для бесконечности
+    double EPSILON = 8.85 * 1e-12;  // Малое значение для вычис
 
     // Проверка, если интервалы включают бесконечность на границах
     if (intervals[0].first == -INF && intervals[intervals.size() - 1].second == INF) {
@@ -55,21 +55,22 @@ pair<double, double> search_horizontal_asymptote(vector<pair<double, double>> &i
 
         INF = 1e+5;  // Изменение значения INF для точности расчёта
         double b = (calculator(output_arr, i_out_arr, INF)) - (k * INF);  // Вычисление свободного члена b
-
+        cout << "b = " << b << endl;
         // Корректировка значения b до целого значения
-        if (b < 0) {
-            b = std::floor(b);
-        } else {
-            b = std::ceil(b);
+        b = round(b);
+
+
+        k = round(k*1000)/1000;
+
+        if (k < EPSILON) {
+            k = 0.0;
         }
 
-        printf("k = %lf b = %lf\n", k,
-               b);  // Вывод наклона и свободного члена асимптоты
-        return {k, b};
+        // Вывод наклона и свободного члена асимптоты
+        k_b_index[0] = k;
+        k_b_index[1] = b;
+        k_b_index[2] = 1;
     }
-
-    // Возвращаем значение по умолчанию, если условие не выполнено
-    return {0.0, 0.0};  // Можно изменить на любое значение, подходящее вашему случаю
 }
 
 // Функция для вывода вертикальных асимптот
@@ -80,3 +81,5 @@ void print_vertical_asymptote(vector<double> &vertical_asymptote) {
              << endl;  // Вывод координаты вертикальной асимптоты
     }
 }
+
+// 24.11.24 Добавлена читаемость и комментарии

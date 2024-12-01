@@ -36,7 +36,6 @@ document.getElementById('button').addEventListener('click', function (event) {
         });
 });
 
-
 function plotGraph(data) {
     const { coordinates, breakPoints } = data;
 
@@ -59,17 +58,17 @@ function plotGraph(data) {
             console.warn('Invalid coordinate:', coord);
         }
 
-        // Проверяем разрывные точки после добавления основной координаты
-        while (breakIndex < breakPoints.length && breakPoints[breakIndex][0] <= coord[1] + 0.01) {
-            const breakPointX = breakPoints[breakIndex][0]; // x координата разрыва
-            if (breakPointX === (coord[1] + 0.01)) {
-                console.log(`Adding break point after coord ${coord}: [null, ${breakPointX}]`);
-                modifiedCoordinates.push([null, breakPointX]); // Вставляем разрыв после координаты
-                xValues.push(breakPointX); // Добавляем x разрыва
-                yValues.push(null); // Добавляем y разрыва
-            }
-            breakIndex++;
+    // Проверяем разрывные точки после добавления основной координаты
+    while (breakIndex < breakPoints.length && breakPoints[breakIndex][0] <= coord[1] + 0.01) {
+        const breakPointX = breakPoints[breakIndex][0]; // x координата разрыва
+        if (Math.abs(breakPointX - coord[1]) <= 0.01) {
+            console.log(`Adding break point after coord ${coord}: [null, ${breakPointX}]`);
+            modifiedCoordinates.push([null, breakPointX]); // Вставляем разрыв после координаты
+            xValues.push(breakPointX); // Добавляем x разрыва
+            yValues.push(null); // Добавляем y разрыва
         }
+        breakIndex++;
+    }
     });
 
     // Добавляем отладочную информацию
@@ -88,7 +87,7 @@ function plotGraph(data) {
     };
 
     const config = {
-        responsive: true, // График адаптируется под размер контейнера
+        responsive: false, // График адаптируется под размер контейнера
         displayModeBar: true, // Панель инструментов
         scrollZoom: true // Возможность масштабирования с помощью скролла
     };
@@ -98,7 +97,6 @@ function plotGraph(data) {
     Plotly.newPlot('plot', plotData, layout, config); // Построение графика с Plotly
     document.getElementById('plot').style.display = 'block'; // Показываем график
 }
-
 
 function displaySteps(data) {
     const stepsList = document.getElementById('stepsList');
@@ -151,6 +149,7 @@ function displaySteps(data) {
         breakPointsItem.textContent = 'Точки разрыва: Нет';
     }
     stepsList.appendChild(breakPointsItem);
+
     // Шаг 3: Вертикальные асимптоты
     const verticalAsymptotesItem = document.createElement('li');
     if (data.asymptotes && data.asymptotes.vertical_asymptotes && data.asymptotes.vertical_asymptotes.length > 0) {
@@ -162,8 +161,8 @@ function displaySteps(data) {
 
     // Шаг 4: Горизонтальная асимптота
     const horizontalAsymptoteItem = document.createElement('li');
-    if (data.asymptotes && data.asymptotes.horizontal_asymptote) {
-        horizontalAsymptoteItem.textContent = `Горизонтальная асимптота: ${data.asymptotes.horizontal_asymptote.join(', ')}`;
+    if (data.asymptotes && data.asymptotes.horizontal_asymptote[0] != 10000000000 && data.asymptotes.horizontal_asymptote[1] != 10000000000 && data.asymptotes.vertical_asymptotes) {
+        horizontalAsymptoteItem.textContent = `Горизонтальная асимптота: y = ${data.asymptotes.horizontal_asymptote[1]}`;
     } else {
         horizontalAsymptoteItem.textContent = 'Горизонтальная асимптота: Нет';
     }
@@ -186,6 +185,68 @@ function displaySteps(data) {
         periodicityItem.textContent = 'Периодичность: Нет информации';
     }
     stepsList.appendChild(periodicityItem);
+
+    // Шаг 7: Интервалы монотонности
+    const monotonyIntervalsItem = document.createElement('li');
+    if (data.monotonyIntervals && data.monotonyIntervals.length > 0) {
+        const monotonyIntervalsText = data.monotonyIntervals.map(interval => {
+            let start = interval[0];
+            let end = interval[1];
+            let type = interval[2];
+            let description = '';
+
+            // Проверка и замена границ на символ бесконечности
+            if (start === 10000000000) start = '∞';
+            if (start === -10000000000) start = '-∞';
+            if (end === 10000000000) end = '∞';
+            if (end === -10000000000) end = '-∞';
+
+            // Определение типа интервала
+            if (type === 1) {
+                description = 'возрастает';
+            } else if (type === -1) {
+                description = 'убывает';
+            }
+
+            return `[${start}, ${end}] - (${description})`;
+        }).join(', ');
+
+        monotonyIntervalsItem.textContent = `Интервалы монотонности: ${monotonyIntervalsText}`;
+    } else {
+        monotonyIntervalsItem.textContent = 'Интервалы монотонности: Нет';
+    }
+    stepsList.appendChild(monotonyIntervalsItem);
+
+    // Шаг 8: Интервалы выпуклости/вогнутости
+    const convexityConcavityIntervalsItem = document.createElement('li');
+    if (data.convexityConcavityIntervals && data.convexityConcavityIntervals.length > 0) {
+        const convexityConcavityIntervalsText = data.convexityConcavityIntervals.map(interval => {
+            let start = interval[0];
+            let end = interval[1];
+            let type = interval[2];
+            let description = '';
+
+            // Проверка и замена границ на символ бесконечности
+            if (start === 10000000000) start = '∞';
+            if (start === -10000000000) start = '-∞';
+            if (end === 10000000000) end = '∞';
+            if (end === -10000000000) end = '-∞';
+
+            // Определение типа интервала
+            if (type === -1) {
+                description = 'Выпуклая';
+            } else if (type === 1) {
+                description = 'Вогнутая';
+            }
+
+            return `[${start}, ${end}] - (${description})`;
+        }).join(', ');
+
+        convexityConcavityIntervalsItem.textContent = `Интервалы выпуклости/вогнутости: ${convexityConcavityIntervalsText}`;
+    } else {
+        convexityConcavityIntervalsItem.textContent = 'Интервалы выпуклости/вогнутости: Нет';
+    }
+    stepsList.appendChild(convexityConcavityIntervalsItem);
 
     // Показываем раздел с шагами
     document.getElementById('steps').style.display = 'block';

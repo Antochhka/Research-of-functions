@@ -1,5 +1,8 @@
 #include <iostream>
-#include <winsock2.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 #include <string>
 #include <regex>
 #include <sstream>
@@ -8,9 +11,7 @@
 #include "validator.h"     
 #include "calculation.h"   
 #include "analysis.h"
-
-#pragma comment(lib, "ws2_32.lib")
-
+#include "derivatives.h"
 
 const int PORT = 8080;
 
@@ -82,6 +83,23 @@ std::string asymptotesToJson(const std::vector<double>& vertical_asymptote, cons
     return oss.str();
 }
 
+// Функция для конвертации кортежей в JSON
+std::string tuplesToJson(const std::vector<std::tuple<double, double, int>>& tuples)
+{
+    std::ostringstream oss;
+    oss << "[";
+    for (size_t i = 0; i < tuples.size(); ++i)
+    {
+        oss << "[" << std::get<0>(tuples[i]) << ", " << std::get<1>(tuples[i]) << ", " << std::get<2>(tuples[i]) << "]";
+        if (i < tuples.size() - 1)
+        {
+            oss << ", ";
+        }
+    }
+    oss << "]";
+    return oss.str();
+}
+
 std::string readFile(const std::string& filename)
 {
     std::ifstream file(filename);
@@ -95,8 +113,10 @@ std::string readFile(const std::string& filename)
     return buffer.str();
 }
 
-void handleClient(SOCKET clientSocket)
+void handleClient(int clientSocket)
 {
+    setlocale(LC_ALL, "ru_RU.UTF-8");  // Устанавливаем локализацию для поддержки русского языка
+
     char buffer[1024] = { 0 };
     int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
 
@@ -121,7 +141,7 @@ void handleClient(SOCKET clientSocket)
         if (path == "/")
         {
             // Читаем HTML файл
-            std::string htmlContent = readFile("D:\\learning\\project\\fullstack\\frontend\\index.html");
+            std::string htmlContent = readFile("/home/suhare/Research-of-functions/frontend/index.html");
             if (htmlContent.empty())
             {
                 std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nФайл не найден";
@@ -136,14 +156,14 @@ void handleClient(SOCKET clientSocket)
         }
         else if (path == "/main.css")
         {
-            std::string cssContent = readFile("D:\\learning\\project\\fullstack\\frontend\\main.css");
+            std::string cssContent = readFile("/home/suhare/Research-of-functions/frontend/main.css");
             std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\nContent-Length: " +
                 std::to_string(cssContent.size()) + "\r\n\r\n" + cssContent;
             send(clientSocket, response.c_str(), response.size(), 0);
         }
         else if (path == "/index.js")
         {
-            std::string jsContent = readFile("D:\\learning\\project\\fullstack\\frontend\\index.js");
+            std::string jsContent = readFile("/home/suhare/Research-of-functions/frontend/index.js");
             std::string response = "HTTP/1.1 200 OK\r\nContent-Type: application/javascript\r\nContent-Length: " +
                 std::to_string(jsContent.size()) + "\r\n\r\n" + jsContent;
             send(clientSocket, response.c_str(), response.size(), 0);
@@ -198,8 +218,16 @@ void handleClient(SOCKET clientSocket)
                     std::vector<std::pair<double, int>> break_points;
                     std::vector<std::vector<double>> coordinate_arr;
                     std::vector<double> vertical_asymptote;
-                    std::pair<double, double> horizontal_asymptote;
+                    std::pair<double, double> horizontal_asymptote = {10000000000 , 10000000000};
                     unsigned int i_out_arr = 0;
+                    std::vector<std::vector<double>> first_critical_points;
+                    std::vector<std::vector<double>> second_critical_points;
+                    RCP<const Basic> first_derivative_expression;
+                    RCP<const Basic> second_derivative_expression;
+                    std::vector<std::tuple<double, double, int>> monotony_intervals;
+                    std::vector<std::tuple<double, double, int>> convexity_concavity_intervals;
+                    std::string break_point_for_tan;
+                    std::vector<double> k_b_index = {0, 0, 0};
 
                     // Парсинг выражения
                     parser(output_arr, i_out_arr, function);
@@ -209,7 +237,7 @@ void handleClient(SOCKET clientSocket)
                     nan_arr.resize(size);
 
                     // Проверка диапазонов и создание интервалов
-                    check_nan_by_range(output_arr, i_out_arr, nan_arr);
+                    check_nan_by_range(output_arr, i_out_arr, nan_arr, function);
                     create_intervals(nan_arr, intervals);
 
                     // Вычисление координат
@@ -222,26 +250,46 @@ void handleClient(SOCKET clientSocket)
                     search_vertical_asymptote(intervals, output_arr, i_out_arr, vertical_asymptote);
 
                     // Поиск горизонтальных асимптот
-                    horizontal_asymptote = search_horizontal_asymptote(intervals, output_arr, i_out_arr);
+                    search_horizontal_asymptote(intervals, output_arr, i_out_arr, k_b_index);
+                    if (k_b_index[2] == 1) {
+                        horizontal_asymptote = std::make_pair(k_b_index[0], k_b_index[1]);
+                    }
 
                     // Проверка симметрии функции
                     std::string symmetryResult = checkFunctionSymmetry(output_arr, i_out_arr);
 
                     // Проверка и поиск периода функции
                     bool is_periodic = isFunctionPeriodic(output_arr, i_out_arr);
-                    std::string periodResult = is_periodic ? findFunctionPeriod(output_arr, i_out_arr) : "Функция не переодична на данном интервале";
+                    std::string periodResult = is_periodic ? findFunctionPeriod(output_arr, i_out_arr) : "Функция не является периодической на заданном интервале";
+
+                    // Поиск критических точек первой и второй производных
+                    search_critical_points(first_critical_points, second_critical_points, first_derivative_expression,
+                                           second_derivative_expression, function);
+
+                    // Области возрастания и убывания
+                    search_monotony_intervals(intervals, first_critical_points, monotony_intervals,
+                                              first_derivative_expression);
+
+                    // Области выпуклости и вогнутости
+                    search_convexity_concavity_intervals(intervals, second_critical_points, convexity_concavity_intervals,
+                                                         second_derivative_expression);
 
                     // Преобразование данных в JSON
                     std::string jsonCoordinates = coordinatesToJson(coordinate_arr);
                     std::string jsonDomain = intervalsToJson(intervals);
                     std::string jsonBreakPoints = breakPointsToJson(break_points);
                     std::string jsonAsymptotes = asymptotesToJson(vertical_asymptote, horizontal_asymptote);
+                    std::string jsonMonotonyIntervals = tuplesToJson(monotony_intervals);
+                    std::string jsonConvexityConcavityIntervals = tuplesToJson(convexity_concavity_intervals);
                     std::string jsonResponse = "{\"coordinates\": " + jsonCoordinates +
                         ", \"domain\": " + jsonDomain +
                         ", \"breakPoints\": " + jsonBreakPoints +
                         ", \"asymptotes\": " + jsonAsymptotes +
                         ", \"symmetry\": \"" + symmetryResult + "\"" +
-                        ", \"periodicity\": \"" + periodResult + "\"}";
+                        ", \"periodicity\": \"" + periodResult + "\"" +
+                        ", \"monotonyIntervals\": " + jsonMonotonyIntervals +
+                        ", \"convexityConcavityIntervals\": " + jsonConvexityConcavityIntervals +
+                        "}";
 
                     // Формирование HTTP-ответа
                     int contentLength = jsonResponse.size();
@@ -270,23 +318,15 @@ void handleClient(SOCKET clientSocket)
         send(clientSocket, response.c_str(), response.size(), 0);
     }
 
-    closesocket(clientSocket);
+    close(clientSocket);
 }
 
 int main()
 {
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket == -1)
     {
-        std::cerr << "WSAStartup failed: " << WSAGetLastError() << std::endl;
-        return 1;
-    }
-
-    SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (serverSocket == INVALID_SOCKET)
-    {
-        std::cerr << "Socket creation failed: " << WSAGetLastError() << std::endl;
-        WSACleanup();
+        std::cerr << "Socket creation failed" << std::endl;
         return 1;
     }
 
@@ -295,19 +335,17 @@ int main()
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     serverAddr.sin_port = htons(PORT);
 
-    if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
+    if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
     {
-        std::cerr << "Bind failed: " << WSAGetLastError() << std::endl;
-        closesocket(serverSocket);
-        WSACleanup();
+        std::cerr << "Bind failed" << std::endl;
+        close(serverSocket);
         return 1;
     }
 
-    if (listen(serverSocket, SOMAXCONN) == SOCKET_ERROR)
+    if (listen(serverSocket, SOMAXCONN) == -1)
     {
-        std::cerr << "Listen failed: " << WSAGetLastError() << std::endl;
-        closesocket(serverSocket);
-        WSACleanup();
+        std::cerr << "Listen failed" << std::endl;
+        close(serverSocket);
         return 1;
     }
 
@@ -315,18 +353,19 @@ int main()
 
     while (true)
     {
-        SOCKET clientSocket = accept(serverSocket, nullptr, nullptr);
-        if (clientSocket != INVALID_SOCKET)
+        sockaddr_in clientAddr;
+        socklen_t clientAddrLen = sizeof(clientAddr);
+        int clientSocket = accept(serverSocket, (sockaddr*)&clientAddr, &clientAddrLen);
+        if (clientSocket != -1)
         {
             handleClient(clientSocket);
         }
         else
         {
-            std::cerr << "Accept failed: " << WSAGetLastError() << std::endl;
+            std::cerr << "Accept failed" << std::endl;
         }
     }
 
-    closesocket(serverSocket);
-    WSACleanup();
+    close(serverSocket);
     return 0;
-}  
+}

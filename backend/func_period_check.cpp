@@ -40,12 +40,12 @@ std::string findFunctionPeriod(vector<vector<double>> &output_arr, unsigned int 
         // Проверяем, совпадает ли значение с y на границе LEFT_BORDER с учетом
         // погрешности
         if (fabs(y_at_period - y_left) < epsilon) {
-            return "Function is periodic with period: " + to_string(period);
+            return "Функция периодическая с периодом: " + to_string(period);
         }
     }
 
     // Если совпадения не найдены, возвращаем информацию, что период не определен
-    return "Function is not periodic on the given interval";
+    return "Функция не является периодической на заданном интервале";
 }
 
 // 24.11.24 Добавлена читаемость и комментарии
