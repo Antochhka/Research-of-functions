@@ -163,8 +163,7 @@ void search_critical_points(vector<vector<double>> &first_critical_points,
         variable_substitution[x] = real_double(x_value);
         RCP<const Basic> substituted_derivative = first_derivative_expr->subs(variable_substitution);
         double res = eval_double(*substituted_derivative);
-        res = round(res*1e+10)/1e-10;
-        // cout << "x = " << x_value << ", first_derivative = " << res << endl;
+        res = round(res * 100) / 100;
         if (fabs(res) < EPSILON) {
             variable_substitution[x] = real_double(x_value - SHIFT);
             double left_zone = eval_double(*first_derivative_expr->subs(variable_substitution));
@@ -206,8 +205,10 @@ void search_critical_points(vector<vector<double>> &first_critical_points,
     while (x_value < RIGHT_BORDER - EPSILON) {
         variable_substitution[x] = real_double(x_value);
         RCP<const Basic> substituted_second_derivative = second_derivative_expr->subs(variable_substitution);
-
-        if (fabs(eval_double(*substituted_second_derivative)) < EPSILON) {
+        double res = eval_double(*substituted_second_derivative);
+        res = round(res * 100) / 100;
+        // cout << "x = " << x_value << ", f''(x) = " << res << endl;
+        if (fabs(res) < EPSILON) {
             variable_substitution[x] = real_double(x_value - SHIFT);
             double left_zone = eval_double(*second_derivative_expr->subs(variable_substitution));
             variable_substitution[x] = real_double(x_value + SHIFT);

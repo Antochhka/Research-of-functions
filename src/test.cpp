@@ -4,6 +4,9 @@
 #include "parser.h"
 #include "validator.h"
 
+
+
+
 int main() {
     setlocale(LC_ALL, "Ru");  // Устанавливаем локализацию для поддержки русского языка
     string input;
@@ -27,6 +30,7 @@ int main() {
         vector<std::tuple<double, double, int>>
             convexity_concavity_intervals;  // Интервалы выпуклости/вогнутости
         string break_point_for_tan;  // Точка разрыва, если подаваемая функция tan
+        vector<double> k_b_index = {0, 0, 0}; //Коэффиценты k и b для наклонной асимптоты
 
         // Инициализация выходного массива
         output_arr.resize(BUFFER);
@@ -51,7 +55,7 @@ int main() {
         print_coordinate_arr(coordinate_arr);
 
         // Поиск точек разрыва функции
-        search_break_points(intervals, break_points, output_arr, i_out_arr, input, break_point_for_tan);
+        search_break_points(intervals, break_points, output_arr, i_out_arr);
 
         // Поиск вертикальных асимптот функции
         search_vertical_asymptote(intervals, output_arr, i_out_arr, vertical_asymptote);
@@ -63,7 +67,12 @@ int main() {
 
         // Поиск горизонтальной асимптоты и её вывод
         if (!vertical_asymptote.empty()) {
-            horizontal_asymptote = search_horizontal_asymptote(intervals, output_arr, i_out_arr);
+            search_horizontal_asymptote(intervals, output_arr, i_out_arr, k_b_index);
+        }
+        
+        if (k_b_index[2] == 1) {
+            cout << "Horizontal asymptote" << endl;
+            cout << "k = " << k_b_index[0] << ", b = " << k_b_index[1] << endl;
         }
 
         // Проверка симметрии функции и вывод результата

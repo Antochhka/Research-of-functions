@@ -6,32 +6,7 @@
 
 // Функция для поиска точек разрыва на основе интервалов
 void search_break_points(vector<pair<double, double>> &intervals, vector<pair<double, int>> &break_points,
-                         vector<vector<double>> &output_arr, unsigned int &i_out_arr, string input,
-                         string break_point_for_tan) {
-    if (input.find("tan") != string::npos) {
-        // Парсим строку в объект SymEngine
-        RCP<const Basic> expr = parse(input);
-
-        RCP<const Symbol> x = symbol("x");
-
-        RCP<const FunctionSymbol> func = rcp_static_cast<const FunctionSymbol>(expr);
-
-        vec_basic args = func->get_args();
-
-        RCP<const Basic> lhs = args[0];  //аргумент внутри тангенса
-
-        RCP<const Basic> rhs = div(pi, integer(2));  // Это "pi/2"
-
-        auto sub_res = sub(lhs, rhs);
-
-        auto res = solve(sub_res, x);
-
-        break_point_for_tan = str(*res);
-
-        cout << "break_point_for_tan = " << break_point_for_tan << endl;
-
-    }
-
+                         vector<vector<double>> &output_arr, unsigned int &i_out_arr) {
     double EPSILON = 8.85 * 1e-12;  // Малое значение для вычисления пределов
                                     // слева и справа от точки разрыва
     double INF = 1e+10;  // Приближенное значение для бесконечности

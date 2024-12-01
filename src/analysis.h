@@ -19,8 +19,7 @@ void create_intervals(vector<bool> &nan_arr, vector<pair<double, double>> &inter
 
 // Функция для поиска точек разрыва
 void search_break_points(vector<pair<double, double>> &intervals, vector<pair<double, int>> &break_points,
-                         vector<vector<double>> &output_arr, unsigned int &i_out_arr, string input,
-                         string break_point_for_tan);
+                         vector<vector<double>> &output_arr, unsigned int &i_out_arr);
 
 // Функция для печати точек разрыва
 void print_break_points(vector<pair<double, int>> &break_points);
@@ -35,8 +34,8 @@ void search_vertical_asymptote(vector<pair<double, double>> &intervals, vector<v
 void print_vertical_asymptote(vector<double> &vertical_asymptote);
 
 // Функция для поиска горизонтальной асимптоты
-pair<double, double> search_horizontal_asymptote(vector<pair<double, double>> &intervals,
-                                                 vector<vector<double>> &output_arr, unsigned int &i_out_arr);
+void search_horizontal_asymptote(vector<pair<double, double>> &intervals, vector<vector<double>> &output_arr,
+                                 unsigned int &i_out_arr, vector<double> &k_b_index);
 
 // Функция проверки вхождения тангенса
 bool tg_check(const vector<vector<double>> &output_arr);
